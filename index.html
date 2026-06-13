@@ -439,27 +439,49 @@
   </div>
   <div id="factBox" class="fact-bubble"><i class="fas fa-lightbulb"></i> Loading physics fact...</div>
 </section>
+  
+  // ==================== REGISTRATION FORM HANDLER ====================
+  const form = document.getElementById('studentForm');
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('studentName').value.trim();
+    const father = document.getElementById('fatherName').value.trim();
+    const mobile = document.getElementById('mobile').value.trim();
+    const selectedClass = document.getElementById('classSelect').value;
+    const school = document.getElementById('school').value.trim();
+    const address = document.getElementById('address').value.trim();
 
-<!-- Registration Form with Email Notification -->
-<section id="register">
-  <h2 class="section-title">Student Registration</h2>
-  <div class="form-card">
-    <form id="studentForm">
-      <input type="text" id="studentName" placeholder="Student's Full Name" required>
-      <input type="text" id="fatherName" placeholder="Father's Name" required>
-      <input type="tel" id="mobile" placeholder="Mobile Number" required>
-      <select id="classSelect" required>
-        <option value="">Select Class</option>
-        <option>Class 11 - Physics</option>
-        <option>Class 12 - Physics</option>
-      </select>
-      <input type="text" id="school" placeholder="School Name">
-      <textarea rows="3" id="address" placeholder="Address (optional)"></textarea>
-      <button type="submit" class="register-btn"><i class="fas fa-paper-plane"></i> Register & Get Email Confirmation</button>
-    </form>
-    <p style="margin-top: 16px; text-align: center;">✅ Firebase storage + instant email alert to Govind Sir</p>
-  </div>
-</section>
+    if (!name || !father || !mobile || !selectedClass) {
+      alert("❌ Please fill all required fields (Name, Father's Name, Mobile, Class)");
+      return;
+    }
+    if (!/^\d{10}$/.test(mobile)) {
+      alert("📱 Please enter a valid 10-digit mobile number.");
+      return;
+    }
+
+    const registrationData = {
+      studentName: name,
+      fatherName: father,
+      mobile: mobile,
+      class: selectedClass,
+      school: school,
+      address: address,
+      timestamp: firebase.database.ServerValue.TIMESTAMP,
+      dateReadable: new Date().toISOString()
+    };
+
+    try {
+      await registrationsRef.push(registrationData);
+      sendEmailNotification(registrationData);
+      alert(`✅ Registration Successful, ${name}!\n\nGovind Sir will contact you on ${mobile} soon.\nA confirmation email has been sent to the instructor.`);
+      form.reset();
+      analytics.logEvent('student_registration', { class: selectedClass });
+    } catch (error) {
+      console.error("Firebase error:", error);
+      alert("⚠️ Network error. Registration failed. Please try again.");
+    }
+  });
 
 <!-- Social Media -->
 <section>
